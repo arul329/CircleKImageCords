@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="html">
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>CircleK</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+
+<body>
+<!-- As a link -->
+<nav class="navbar navbar-light bg-light">
+    <a class="navbar-brand" href="#">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Circle_K_logo_2016.svg/1200px-Circle_K_logo_2016.svg.png"
+             height="40px"/>
+    </a>
+
+    <div class="d-flex justify-content-end ml-auto align-content-center align-items-center">
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="checkbox" checked="true">
+            <label class="form-check-label" for="checkbox"> Enabled </label>
+        </div>
+        <button type="button" id="save" class="btn btn-primary ml-3"> Save</button>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 p-3">
+            <div class="wrapper d-flex justify-content-center">
+                <canvas id="canvas" width="100%" height="500" style="border: 2px solid black"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Pump Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12 pt-2">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Pump Number:</span>
+                            </div>
+                            <input type="text" id="pump-number" class="form-control" placeholder="Enter Pump Number"
+                                   aria-label="Username"
+                                   aria-describedby="basic-addon1">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <div class="input-group-append">
+                                <span class="input-group-text" id="basic-addon2">Pump Description:</span>
+                            </div>
+                            <input type="text" id="pump-description" class="form-control"
+                                   placeholder="Enter Pump Description"
+                                   aria-label="Recipient's username" aria-describedby="basic-addon2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" id="popup-save" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.0.0-beta.1/fabric.js"></script>
+
+<script>
+    const imagePath = "images/two_cars.png";
+    document.addEventListener("DOMContentLoaded", function (event) {
+
+        function mainCode(dimensions) {
+
+            let objectCount = 0;
+            let cordinates = {};
+            let cordinatesList = [];
+            let finalObjectToWrite = {};
+
+            let RECT_NUMBER = 0;
+
+            const canvas = document.querySelector('#canvas');
+            canvas.height = dimensions.height;
+            canvas.width = dimensions.width;
+
+            canvas.toObject = (function (toObject) {
+                return function () {
+                    return fabric.util.object.extend(toObject.call(this), {
+                        id: value
+                    });
+                };
+            })(canvas.toObject);
+
+            let fabricCanvas = new fabric.Canvas(canvas);
+
+            fabricCanvas.setBackgroundImage(imagePath, fabricCanvas.renderAll.bind(fabricCanvas), {
+                originX: 'left',
+                originY: 'top'
+            });
+
+            /* Save Button Code */
+            document.getElementById('save').addEventListener("click", function (e) {
+                if (finalObjectToWrite === undefined || finalObjectToWrite === null || finalObjectToWrite.coordsArray === undefined) {
+
+                    alert('Nothing to save! Please draw Rectangle.');
+                    return;
+                } else if (finalObjectToWrite.coordsArray.length !== 2) {
+
+                    alert('Should have 2 areas marked. Please Draw 2 Rectangles.');
+                    return;
+                }
+                saveDataToFile(finalObjectToWrite);
+            });
+
+            function getValuesOfPump() {
+
+                let gasPumpNumberLocal, descriptionOfPumpLocal = null;
+
+                gasPumpNumberLocal = document.getElementById('pump-number');
+                descriptionOfPumpLocal = document.getElementById('pump-description');
+
+                return {"gasPumpNumber": gasPumpNumberLocal, "descriptionOfPump": descriptionOfPumpLocal};
+            }
+
+            document.getElementById('popup-save').addEventListener("click", function (e) {
+
+                let gasPumpNumberLocal, descriptionOfPumpLocal = null;
+
+                gasPumpNumberLocal = document.getElementById('pump-number');
+                descriptionOfPumpLocal = document.getElementById('pump-description');
+
+                $('#exampleModal').modal('hide');
+            });
+
+            function getGasPumpNumber() {
+                let gasPumpNumber;
+                //exampleModal
+                // $('#exampleModal').modal('show');
+
+                gasPumpNumber = prompt('Enter Gas Pump Number:', '');
+                return gasPumpNumber;
+            }
+
+            function getDescriptionOfPump() {
+                let descriptionOfPump;
+
+                descriptionOfPump = prompt('Enter Description of Pump:', '');
+                return descriptionOfPump;
+            }
+
+            function saveDataToFile(data) {
+                let xhr = new XMLHttpRequest();
+                xhr.open("POST", 'https://circlekimagetest1.interplay.iterate.ai/saveData', true);
+
+                xhr.setRequestHeader("Content-Type", "application/json");
+
+                xhr.send(JSON.stringify(data));
+
+                xhr.onreadystatechange = function () {
+                    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                        console.log("SUCCESS!");
+                        alert("Configuration Saved Successfully!");
+                    }
+                }
+            }
+
+            const checkbox = document.querySelector('#checkbox');
+            let initialPos, bounds, rect, dragging = false, freeDrawing = checkbox.checked;
+            const options = {
+                drawRect: true,
+                onlyOne: true,
+                rectProps: {
+                    stroke: 'red',
+                    cornerColor: 'green',
+                    cornerSize: 6,
+                    transparentCorners: false,
+                    strokeWidth: 1,
+                    fill: ''
+                }
+            };
+
+            function onMouseDown(e) {
+                dragging = true;
+                if (!freeDrawing) {
+                    return
+                }
+                initialPos = {...e.pointer};
+                bounds = {};
+                if (options.drawRect) {
+                    rect = new fabric.Rect({
+                        left: initialPos.x,
+                        top: initialPos.y,
+                        width: 0, height: 0,
+                        ...options.rectProps
+                    });
+                    rect['_id'] = `rect-${++RECT_NUMBER}`;
+                    fabricCanvas.add(rect)
+                }
+            }
+
+            function update(pointer) {
+                if (initialPos.x > pointer.x) {
+                    bounds.x = Math.max(0, pointer.x);
+                    bounds.width = initialPos.x - bounds.x;
+                } else {
+                    bounds.x = initialPos.x;
+                    bounds.width = pointer.x - initialPos.x;
+                }
+                if (initialPos.y > pointer.y) {
+                    bounds.y = Math.max(0, pointer.y);
+                    bounds.height = initialPos.y - bounds.y;
+                } else {
+                    bounds.height = pointer.y - initialPos.y;
+                    bounds.y = initialPos.y;
+                }
+                if (options.drawRect) {
+                    rect.left = bounds.x;
+                    rect.top = bounds.y;
+                    rect.width = bounds.width;
+                    rect.height = bounds.height;
+                    rect.dirty = true;
+                    fabricCanvas.requestRenderAllBound();
+                }
+            }
+
+            function onMouseMove(e) {
+                if (!dragging || !freeDrawing) {
+                    return
+                }
+                requestAnimationFrame(() => update(e.pointer))
+            }
+
+            function onMouseUp(e) {
+
+                if (rect !== null) {
+
+                    let gasPumpNumber, descriptionOfPump;
+
+                    if (rect.gasPumpNumber === undefined || rect.gasPumpNumber === null || rect.descriptionOfPump === undefined || rect.descriptionOfPump === null) {
+
+                        gasPumpNumber = getGasPumpNumber();
+                        descriptionOfPump = getDescriptionOfPump();
+
+                    } else {
+                        gasPumpNumber = rect.gasPumpNumber;
+                        descriptionOfPump = rect.descriptionOfPump;
+                    }
+
+                    cordinates['startX'] = rect.left;
+                    cordinates['startY'] = rect.top;
+                    let width = rect.scaleX * rect.width;
+                    let height = rect.scaleY * rect.height;
+
+                    cordinates['endX'] = rect.left + width;
+                    cordinates['endY'] = rect.top + height;
+                    cordinates['width'] = width;
+                    cordinates['height'] = height;
+                    cordinates['pumpNumber'] = gasPumpNumber;
+                    cordinates['pumpDescription'] = descriptionOfPump;
+
+                    cordinates['_id'] = rect._id;
+
+                    cordinatesList.push(cordinates);
+                    cordinates = {};
+
+                    finalObjectToWrite["coordsArray"] = cordinatesList;
+                    gasPumpNumber = null;
+                    descriptionOfPump = null;
+                }
+
+                if (fabricCanvas.toJSON().objects && fabricCanvas.toJSON().objects.length > 0) {
+                    objectCount = fabricCanvas.toJSON().objects.length;
+                }
+
+                dragging = false;
+                if (!freeDrawing) {
+                    return
+                }
+                if (options.drawRect && rect && (rect.width === 0 || rect.height === 0)) {
+                    fabricCanvas.remove(rect)
+                }
+                if (!options.drawRect || !rect) {
+                    rect = new fabric.Rect({
+                        ...bounds, left: bounds.x, top: bounds.y,
+                        ...options.rectProps
+                    });
+                    console.log('rect add - MouseUP called');
+                    fabricCanvas.add(rect);
+                    rect.dirty = true;
+                    fabricCanvas.requestRenderAllBound();
+                }
+                rect.setCoords();
+                options.onlyOne && uninstall()
+            }
+
+            function onSelectionCreated(e) {
+                console.log('on Selection Created.');
+            }
+
+            function onSelectionUpdated(e) {
+                console.log('on Selection Updated.');
+            }
+
+            function onDragEnter(e) {
+                console.log('on Drag Enter.');
+            }
+
+            function onDragLeave(e) {
+                console.log('on Drag Leave.');
+            }
+
+            function onDragOver(e) {
+                // console.log('on Drag Over.');
+            }
+
+            function onObjectMoving(e) {
+                // console.log('on Object Moving.');
+            }
+
+            function onObjectScaling(e) {
+                // console.log('on Object Scaling');
+                // console.log(e);
+            }
+
+            function onObjectModified(e) {
+                // console.log('on Object Modified');
+                // console.log(e);
+
+                let objectId = e.target._id;
+                let transformObject = e.transform;
+
+                let savedObjectOfCords = getSavedObjectFromFinalObjectToWrite(finalObjectToWrite, objectId);
+
+                cordinates['startX'] = transformObject.target.left;
+                cordinates['startY'] = transformObject.target.top;
+
+                let ScaleX = (transformObject.newScaleX) ? transformObject.newScaleX : transformObject.scaleX;
+                let ScaleY = (transformObject.newScaleY) ? transformObject.newScaleY : transformObject.scaleY;
+
+                let width = ScaleX * transformObject.target.width;
+                let height = ScaleY * transformObject.target.height;
+
+                cordinates['endX'] = transformObject.target.left + width;
+                cordinates['endY'] = transformObject.target.top + height;
+                cordinates['width'] = width;
+                cordinates['height'] = height;
+                cordinates['pumpNumber'] = savedObjectOfCords.data.pumpNumber;
+                cordinates['pumpDescription'] = savedObjectOfCords.data.pumpDescription;
+
+                cordinates['_id'] = objectId;
+
+                finalObjectToWrite.coordsArray[savedObjectOfCords.num] = cordinates;
+
+                cordinates = {};
+            }
+
+            function getSavedObjectFromFinalObjectToWrite(finalObject, id) {
+                let cordsArray = finalObject.coordsArray;
+
+                for (let i = 0; i < cordsArray.length; i++) {
+                    if (cordsArray[i]._id === id) {
+                        return {"num": Number(i), "data": cordsArray[i]};
+                    }
+                }
+            }
+
+            function install() {
+                freeDrawing = true;
+                dragging = false;
+                rect = null;
+                checkbox.checked = true;
+                fabricCanvas.on('mouse:down', onMouseDown);
+                fabricCanvas.on('mouse:move', onMouseMove);
+                fabricCanvas.on('mouse:up', onMouseUp);
+                fabricCanvas.on('selection:created', onMouseUp);
+                fabricCanvas.on('selection:updated', onMouseUp);
+                fabricCanvas.on('dragenter', onDragEnter);
+                fabricCanvas.on('dragleave', onDragLeave);
+                fabricCanvas.on('dragover', onDragOver);
+                fabricCanvas.on('object:moving', onObjectMoving);
+                fabricCanvas.on('object:scaling', onObjectScaling);
+                fabricCanvas.on('object:modified', onObjectModified);
+            }
+
+            function uninstall() {
+                freeDrawing = false;
+                dragging = false;
+                rect = null;
+
+                checkbox.checked = false;
+                fabricCanvas.off('mouse:down', onMouseDown);
+                fabricCanvas.off('mouse:move', onMouseMove);
+                fabricCanvas.off('mouse:up', onMouseUp);
+            }
+
+            checkbox.addEventListener('change', e =>
+                e.currentTarget.checked ? install() : uninstall()
+            );
+            freeDrawing && install();
+        }
+
+        /* Get Image Dimensions */
+        function startWithFetchingImageDimensions() {
+            let img = new Image();
+            let dimensions = {};
+            img.src = imagePath;
+            img.onload = () => {
+                dimensions["width"] = img.width;
+                dimensions["height"] = img.height;
+
+                mainCode(dimensions);
+            };
+        }
+        startWithFetchingImageDimensions();
+    });
+</script>
+</body>
+</html>
