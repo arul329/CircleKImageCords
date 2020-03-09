@@ -18,7 +18,7 @@
     </a>
 
     <div class="d-flex justify-content-end ml-auto align-content-center align-items-center">
-        <div class="form-group form-check">
+        <div style="visibility: hidden" class="form-group form-check">
             <input type="checkbox" class="form-check-input" id="checkbox" checked="true">
             <label class="form-check-label" for="checkbox"> Enabled </label>
         </div>
@@ -313,6 +313,10 @@
                 }
                 rect.setCoords();
                 options.onlyOne && uninstall()
+
+                if (RECT_NUMBER < 2) {
+                    install();
+                }
             }
 
             function onSelectionCreated(e) {
@@ -394,11 +398,11 @@
                 fabricCanvas.on('mouse:down', onMouseDown);
                 fabricCanvas.on('mouse:move', onMouseMove);
                 fabricCanvas.on('mouse:up', onMouseUp);
-                fabricCanvas.on('selection:created', onMouseUp);
-                fabricCanvas.on('selection:updated', onMouseUp);
-                fabricCanvas.on('dragenter', onDragEnter);
-                fabricCanvas.on('dragleave', onDragLeave);
-                fabricCanvas.on('dragover', onDragOver);
+                // fabricCanvas.on('selection:created', onMouseUp);
+                // fabricCanvas.on('selection:updated', onMouseUp);
+                // fabricCanvas.on('dragenter', onDragEnter);
+                // fabricCanvas.on('dragleave', onDragLeave);
+                // fabricCanvas.on('dragover', onDragOver);
                 fabricCanvas.on('object:moving', onObjectMoving);
                 fabricCanvas.on('object:scaling', onObjectScaling);
                 fabricCanvas.on('object:modified', onObjectModified);
@@ -433,6 +437,7 @@
                 mainCode(dimensions);
             };
         }
+
         startWithFetchingImageDimensions();
     });
 </script>
