@@ -140,7 +140,7 @@
 
             document.getElementById('takePhoto').addEventListener("click", function (e) {
                 console.log('Photo taken Successfully!');
-                // takePhotoApi();
+                takePhotoApi();
             });
 
             function takePhotoApi() {
@@ -199,7 +199,7 @@
 
                         xhr.onreadystatechange = function () {
                             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                                console.log("URL UPDATE SUCCESS!");
+                                // console.log("URL UPDATE SUCCESS!");
                                 alert("Camera URL updated Successfully!");
                             }
                         }
@@ -255,11 +255,11 @@
 
                     options.onlyOne && uninstall();
 
-                    console.log('new finalObjectTowrite: ');
-                    console.log(finalObjectToWrite);
-
-                    console.log(fabricCanvas);
-                    console.log(fabricCanvas.toJSON());
+                    // console.log('new finalObjectTowrite: ');
+                    // console.log(finalObjectToWrite);
+                    //
+                    // console.log(fabricCanvas);
+                    // console.log(fabricCanvas.toJSON());
 
                     if (jsonResponse.camera_url !== undefined || jsonResponse.camera_url === ' ') {
                         // camera_url
