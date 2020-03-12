@@ -22,6 +22,10 @@
             <input type="checkbox" class="form-check-input" id="checkbox" checked="true">
             <label class="form-check-label" for="checkbox"> Enabled </label>
         </div>
+        <label class="form-check-label" for="checkbox"> Camera URL:&nbsp;&nbsp;</label>
+        <input type="text" class="form-input" id="camera_url" placeholder="Enter Camera URL here.....">
+        <button type="button" id="camera_url_edit" class="btn btn-primary ml-3"> Edit</button>
+        <button type="button" id="takePhoto" class="btn btn-primary ml-3"> Take Photo</button>
         <button type="button" id="save" class="btn btn-primary ml-3"> Save</button>
     </div>
 </nav>
@@ -134,6 +138,158 @@
                 saveDataToFile(finalObjectToWrite);
             });
 
+            document.getElementById('takePhoto').addEventListener("click", function (e) {
+                console.log('Photo taken Successfully!');
+                // takePhotoApi();
+            });
+
+            function takePhotoApi() {
+                let xhr = new XMLHttpRequest();
+                xhr.open("GET", 'https://circlekimagetest1.interplay.iterate.ai/take_photo', true);
+
+                xhr.onreadystatechange = function () {
+                    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                        console.log("PHOTO SUCCESS!");
+                        alert("Photo Saved Successfully!");
+                    }
+                }
+            }
+
+            function testDraw() {
+                var rect1 = new fabric.Rect({
+                    left: 23,
+                    top: 44,
+                    width: 120,
+                    height: 50,
+                    stroke: 'red',
+                    cornerColor: 'green',
+                    cornerSize: 6,
+                    transparentCorners: false,
+                    strokeWidth: 1,
+                    fill: ''
+                });
+                fabricCanvas.add(rect1);
+                console.log(fabricCanvas.toJSON());
+            }
+
+            // testDraw();
+
+            document.getElementById('camera_url_edit').addEventListener("click", function (e) {
+
+                if (document.getElementById('camera_url_edit').innerText === 'Edit') {
+                    document.getElementById('camera_url').readOnly = false;
+                    document.getElementById('camera_url_edit').innerText = 'Update Camera URL';
+                } else {
+
+                    if (document.getElementById('camera_url').value === null || document.getElementById('camera_url').value === '') {
+                        alert('Camera Url cannot be Empty!');
+                    } else {
+                        let newCameraUrlValue = document.getElementById('camera_url').value;
+                        let jsonDataToSendInPost = {"camera_url": newCameraUrlValue};
+
+                        document.getElementById('camera_url').readOnly = true;
+                        document.getElementById('camera_url_edit').innerText = 'Edit';
+
+                        let xhr = new XMLHttpRequest();
+                        xhr.open("POST", 'https://circlekimagetest1.interplay.iterate.ai/updateCameraUrl', true);
+
+                        xhr.setRequestHeader("Content-Type", "application/json");
+
+                        xhr.send(JSON.stringify(jsonDataToSendInPost));
+
+                        xhr.onreadystatechange = function () {
+                            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                                console.log("URL UPDATE SUCCESS!");
+                                alert("Camera URL updated Successfully!");
+                            }
+                        }
+                    }
+                }
+            });
+
+            readJsonFileData();
+
+            function readJsonFileData() {
+                let xhr = new XMLHttpRequest();
+                xhr.responseType = 'json';
+                xhr.open("GET", 'https://circlekimagetest1.interplay.iterate.ai/readJsonFile', true);
+
+                xhr.onload = function () {
+                    let jsonResponse = xhr.response;
+                    // console.log("Data is: ");
+                    // console.log(jsonResponse);
+
+                    let rect1 = new fabric.Rect({
+                        left: jsonResponse.coordsArray[0].startX,
+                        top: jsonResponse.coordsArray[0].startY,
+                        width: jsonResponse.coordsArray[0].width,
+                        height: jsonResponse.coordsArray[0].height,
+                        stroke: 'red',
+                        cornerColor: 'green',
+                        cornerSize: 6,
+                        transparentCorners: false,
+                        strokeWidth: 1,
+                        fill: ''
+                    });
+                    rect1['_id'] = jsonResponse.coordsArray[0]._id;
+                    fabricCanvas.add(rect1);
+
+                    let rect2 = new fabric.Rect({
+                        left: jsonResponse.coordsArray[1].startX,
+                        top: jsonResponse.coordsArray[1].startY,
+                        width: jsonResponse.coordsArray[1].width,
+                        height: jsonResponse.coordsArray[1].height,
+                        stroke: 'red',
+                        cornerColor: 'green',
+                        cornerSize: 6,
+                        transparentCorners: false,
+                        strokeWidth: 1,
+                        fill: ''
+                    });
+                    rect2['_id'] = jsonResponse.coordsArray[1]._id;
+                    fabricCanvas.add(rect2);
+
+                    finalObjectToWrite["coordsArray"] = jsonResponse.coordsArray;
+
+                    RECT_NUMBER = finalObjectToWrite.length;
+
+                    options.onlyOne && uninstall();
+
+                    console.log('new finalObjectTowrite: ');
+                    console.log(finalObjectToWrite);
+
+                    console.log(fabricCanvas);
+                    console.log(fabricCanvas.toJSON());
+
+                    if (jsonResponse.camera_url !== undefined || jsonResponse.camera_url === ' ') {
+                        // camera_url
+                        // console.log('Camera Url is: ' + jsonResponse.camera_url);
+                        // let camera_url_to_show = jsonResponse.camera_url.substring(0, 7) + "" + jsonResponse.camera_url.substring(7, jsonResponse.camera_url.length).replace(/\d/g, "*");
+                        // let latNchars = jsonResponse.camera_url.length - 7;
+                        // console.log(latNchars);
+                        // let regex = `/.{0,${latNchars}}$/g`;
+                        // console.log(regex);
+                        // let camera_url_to_show = jsonResponse.camera_url.replace(/.{0,58}$/g, "*");
+                        // console.log(camera_url_to_show);
+                        document.getElementById("camera_url").value = jsonResponse.camera_url;
+                        document.getElementById('camera_url').readOnly = true;
+                    } else {
+                        console.log('Camera Url is not set in file. User needs to enter it.');
+                        document.getElementById('camera_url_edit').innerText = 'Update Camera URL';
+                    }
+
+
+                    return jsonResponse;
+                };
+                xhr.send(null);
+                // xhr.onreadystatechange = function () {
+                //     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                //         console.log("Data is: ");
+                //         console.log()
+                //     }
+                // }
+            }
+
             function getValuesOfPump() {
 
                 let gasPumpNumberLocal, descriptionOfPumpLocal = null;
@@ -171,17 +327,24 @@
             }
 
             function saveDataToFile(data) {
-                let xhr = new XMLHttpRequest();
-                xhr.open("POST", 'https://circlekimagetest1.interplay.iterate.ai/saveData', true);
 
-                xhr.setRequestHeader("Content-Type", "application/json");
+                if (document.getElementById('camera_url_edit').value === undefined || document.getElementById('camera_url_edit').value === null) {
+                    alert('Please Enter Camera URL');
+                } else {
+                    data['camera_url'] = document.getElementById('camera_url').value;
 
-                xhr.send(JSON.stringify(data));
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("POST", 'https://circlekimagetest1.interplay.iterate.ai/saveData', true);
 
-                xhr.onreadystatechange = function () {
-                    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                        console.log("SUCCESS!");
-                        alert("Configuration Saved Successfully!");
+                    xhr.setRequestHeader("Content-Type", "application/json");
+
+                    xhr.send(JSON.stringify(data));
+
+                    xhr.onreadystatechange = function () {
+                        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                            console.log("SUCCESS!");
+                            alert("Configuration Saved Successfully!");
+                        }
                     }
                 }
             }
@@ -288,6 +451,7 @@
                     finalObjectToWrite["coordsArray"] = cordinatesList;
                     gasPumpNumber = null;
                     descriptionOfPump = null;
+                    // console.log(finalObjectToWrite);
                 }
 
                 if (fabricCanvas.toJSON().objects && fabricCanvas.toJSON().objects.length > 0) {
