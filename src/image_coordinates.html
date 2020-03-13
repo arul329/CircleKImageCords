@@ -5,15 +5,15 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>CircleK</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/bootstrap-4.4.1-dist/css/bootstrap.min.css">
+    <!--          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"-->
 </head>
 
 <body>
 <!-- As a link -->
 <nav class="navbar navbar-light bg-light">
     <a class="navbar-brand" href="#">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Circle_K_logo_2016.svg/1200px-Circle_K_logo_2016.svg.png"
+        <img src="assets/images/1200px-Circle_K_logo_2016.svg.png"
              height="40px"/>
     </a>
 
@@ -70,6 +70,7 @@
                             <input type="text" id="pump-description" class="form-control"
                                    placeholder="Enter Pump Description"
                                    aria-label="Recipient's username" aria-describedby="basic-addon2">
+                            <input type="hidden" id="rect_object_number"/>
                         </div>
                     </div>
                 </div>
@@ -81,16 +82,20 @@
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.0.0-beta.1/fabric.js"></script>
+
+<!--        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"-->
+<!--        crossorigin="anonymous"-->
+<script src="assets/jquery-3.4.1.slim.min.js"></script>
+
+<!--integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"-->
+<!--crossorigin="anonymous"-->
+<script src="assets/popper.js@1.16.0/popper.min.js"></script>
+
+<!--integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"-->
+<!--crossorigin="anonymous"-->
+<script src="assets/bootstrap-4.4.1-dist/js/bootstrap.min.js"></script>
+
+<script src="assets/fabric_js_4.0.0-beta.1/fabric.js"></script>
 
 <script>
     const imagePath = "images/two_cars.png";
@@ -300,15 +305,15 @@
                 return {"gasPumpNumber": gasPumpNumberLocal, "descriptionOfPump": descriptionOfPumpLocal};
             }
 
-            document.getElementById('popup-save').addEventListener("click", function (e) {
-
-                let gasPumpNumberLocal, descriptionOfPumpLocal = null;
-
-                gasPumpNumberLocal = document.getElementById('pump-number');
-                descriptionOfPumpLocal = document.getElementById('pump-description');
-
-                $('#exampleModal').modal('hide');
-            });
+            // document.getElementById('popup-save').addEventListener("click", function (e) {
+            //
+            //     let gasPumpNumberLocal, descriptionOfPumpLocal = null;
+            //
+            //     gasPumpNumberLocal = document.getElementById('pump-number');
+            //     descriptionOfPumpLocal = document.getElementById('pump-description');
+            //
+            //     $('#exampleModal').modal('hide');
+            // });
 
             function getGasPumpNumber() {
                 let gasPumpNumber;
@@ -544,6 +549,37 @@
                 cordinates = {};
             }
 
+            function onMouseDoubleClick(e) {
+                // console.log('Mouse Double Clicked!');
+                // console.log(e);
+
+                if (e.target !== null && e.target._id !== null) {
+                    $('#exampleModal').modal('show');
+                    let currentRectangleObject = getSavedObjectFromFinalObjectToWrite(finalObjectToWrite, e.target._id);
+
+                    document.getElementById("pump-number").value = currentRectangleObject.data.pumpNumber;
+                    document.getElementById("pump-description").value = currentRectangleObject.data.pumpDescription;
+                    document.getElementById("rect_object_number").value = currentRectangleObject.num;
+                }
+            }
+
+            document.getElementById('popup-save').addEventListener("click", function (e) {
+
+                let gasPumpNumberLocal, descriptionOfPumpLocal = null;
+                let index_number = 0;
+
+                gasPumpNumberLocal = document.getElementById('pump-number').value;
+                descriptionOfPumpLocal = document.getElementById('pump-description').value;
+                index_number = Number(document.getElementById('rect_object_number').value);
+
+                // console.log('New values: ' + gasPumpNumberLocal + ' | ' + descriptionOfPumpLocal + ' | ' + document.getElementById('rect_object_number').value);
+
+                finalObjectToWrite.coordsArray[index_number].pumpNumber = gasPumpNumberLocal;
+                finalObjectToWrite.coordsArray[index_number].pumpDescription = descriptionOfPumpLocal;
+
+                $('#exampleModal').modal('hide');
+            });
+
             function getSavedObjectFromFinalObjectToWrite(finalObject, id) {
                 let cordsArray = finalObject.coordsArray;
 
@@ -570,6 +606,7 @@
                 fabricCanvas.on('object:moving', onObjectMoving);
                 fabricCanvas.on('object:scaling', onObjectScaling);
                 fabricCanvas.on('object:modified', onObjectModified);
+                fabricCanvas.on('mouse:dblclick', onMouseDoubleClick);
             }
 
             function uninstall() {
