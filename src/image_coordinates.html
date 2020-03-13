@@ -110,6 +110,8 @@
 
             let RECT_NUMBER = 0;
 
+            var originalCameraUrl = '';
+
             const canvas = document.querySelector('#canvas');
             canvas.height = dimensions.height;
             canvas.width = dimensions.width;
@@ -183,6 +185,7 @@
 
                 if (document.getElementById('camera_url_edit').innerText === 'Edit') {
                     document.getElementById('camera_url').readOnly = false;
+                    document.getElementById('camera_url').value = originalCameraUrl;
                     document.getElementById('camera_url_edit').innerText = 'Update Camera URL';
                 } else {
 
@@ -191,6 +194,9 @@
                     } else {
                         let newCameraUrlValue = document.getElementById('camera_url').value;
                         let jsonDataToSendInPost = {"camera_url": newCameraUrlValue};
+
+                        originalCameraUrl = document.getElementById('camera_url').value;
+                        document.getElementById('camera_url').value = maskUrl(document.getElementById('camera_url').value);
 
                         document.getElementById('camera_url').readOnly = true;
                         document.getElementById('camera_url_edit').innerText = 'Edit';
@@ -270,13 +276,10 @@
                         // camera_url
                         // console.log('Camera Url is: ' + jsonResponse.camera_url);
                         // let camera_url_to_show = jsonResponse.camera_url.substring(0, 7) + "" + jsonResponse.camera_url.substring(7, jsonResponse.camera_url.length).replace(/\d/g, "*");
-                        // let latNchars = jsonResponse.camera_url.length - 7;
-                        // console.log(latNchars);
-                        // let regex = `/.{0,${latNchars}}$/g`;
-                        // console.log(regex);
-                        // let camera_url_to_show = jsonResponse.camera_url.replace(/.{0,58}$/g, "*");
-                        // console.log(camera_url_to_show);
-                        document.getElementById("camera_url").value = jsonResponse.camera_url;
+
+                        originalCameraUrl = jsonResponse.camera_url;
+
+                        document.getElementById("camera_url").value = maskUrl(jsonResponse.camera_url);
                         document.getElementById('camera_url').readOnly = true;
                     } else {
                         console.log('Camera Url is not set in file. User needs to enter it.');
@@ -287,12 +290,15 @@
                     return jsonResponse;
                 };
                 xhr.send(null);
-                // xhr.onreadystatechange = function () {
-                //     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                //         console.log("Data is: ");
-                //         console.log()
-                //     }
-                // }
+            }
+
+            function maskUrl(url) {
+                let length = url.length;
+                let starString = '';
+                for (let i = 0; i < (length - 7); i++) {
+                    starString = starString + '*';
+                }
+                return url.substring(0, 7) + starString;
             }
 
             function getValuesOfPump() {
