@@ -146,20 +146,29 @@
             });
 
             document.getElementById('takePhoto').addEventListener("click", function (e) {
-                console.log('Photo taken Successfully!');
+                // console.log('Photo taken Successfully!');
                 takePhotoApi();
             });
 
             function takePhotoApi() {
                 let xhr = new XMLHttpRequest();
+                xhr.responseType = 'json';
                 xhr.open("GET", 'https://circlekimagetest1.interplay.iterate.ai/take_photo', true);
 
-                xhr.onreadystatechange = function () {
-                    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                        console.log("PHOTO SUCCESS!");
-                        alert("Photo Saved Successfully!");
+                xhr.onload = function () {
+                    let jsonResponse = xhr.response;
+                    console.log('Take Photo Response: ');
+                    console.log(jsonResponse);
+                    if (jsonResponse.photo !== undefined) {
+                        alert(jsonResponse.photo);
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        alert('Error: ' + jsonResponse.error);
                     }
-                }
+                };
+                xhr.send(null);
             }
 
             function testDraw() {
@@ -582,6 +591,8 @@
 
                 finalObjectToWrite.coordsArray[index_number].pumpNumber = gasPumpNumberLocal;
                 finalObjectToWrite.coordsArray[index_number].pumpDescription = descriptionOfPumpLocal;
+
+                saveDataToFile(finalObjectToWrite);
 
                 $('#exampleModal').modal('hide');
             });
