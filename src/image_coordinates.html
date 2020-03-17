@@ -132,7 +132,7 @@
 
                         <div class="input-group mb-3">
                             <div class="input-group-append">
-                                <span class="input-group-text" id="basic-addon2">Pump Description:</span>
+                                <span class="input-group-text" id="basic-addon2">Store Name/ID:</span>
                             </div>
                             <input type="text" id="pump-description" class="form-control"
                                    placeholder="Enter Pump Description"
@@ -538,8 +538,8 @@
                     cordinates['endY'] = rect.top + height;
                     cordinates['width'] = width;
                     cordinates['height'] = height;
-                    cordinates['pumpNumber'] = gasPumpNumber;
-                    cordinates['pumpDescription'] = descriptionOfPump;
+                    cordinates['pump_no'] = gasPumpNumber;
+                    cordinates['store_id'] = descriptionOfPump;
 
                     cordinates['_id'] = rect._id;
 
@@ -632,8 +632,8 @@
                 cordinates['endY'] = transformObject.target.top + height;
                 cordinates['width'] = width;
                 cordinates['height'] = height;
-                cordinates['pumpNumber'] = savedObjectOfCords.data.pumpNumber;
-                cordinates['pumpDescription'] = savedObjectOfCords.data.pumpDescription;
+                cordinates['pump_no'] = savedObjectOfCords.data.pump_no;
+                cordinates['store_id'] = savedObjectOfCords.data.store_id;
 
                 cordinates['_id'] = objectId;
 
@@ -650,8 +650,8 @@
                     $('#exampleModal').modal('show');
                     let currentRectangleObject = getSavedObjectFromFinalObjectToWrite(finalObjectToWrite, e.target._id);
 
-                    document.getElementById("pump-number").value = currentRectangleObject.data.pumpNumber;
-                    document.getElementById("pump-description").value = currentRectangleObject.data.pumpDescription;
+                    document.getElementById("pump-number").value = currentRectangleObject.data.pump_no;
+                    document.getElementById("pump-description").value = currentRectangleObject.data.store_id;
                     document.getElementById("rect_object_number").value = currentRectangleObject.num;
                 }
             }
@@ -667,8 +667,8 @@
 
                 // console.log('New values: ' + gasPumpNumberLocal + ' | ' + descriptionOfPumpLocal + ' | ' + document.getElementById('rect_object_number').value);
 
-                finalObjectToWrite.coordsArray[index_number].pumpNumber = gasPumpNumberLocal;
-                finalObjectToWrite.coordsArray[index_number].pumpDescription = descriptionOfPumpLocal;
+                finalObjectToWrite.coordsArray[index_number].pump_no = gasPumpNumberLocal;
+                finalObjectToWrite.coordsArray[index_number].store_id = descriptionOfPumpLocal;
 
                 saveDataToFile(finalObjectToWrite);
 
